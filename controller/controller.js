@@ -1,5 +1,6 @@
-const { response } = require("../app")
+const express = require(`express`)
 const { selectCategories } = require("../model/model.js")
+
 
 exports.getCategories = (req,res,next) =>{
     selectCategories().then((categories) =>{

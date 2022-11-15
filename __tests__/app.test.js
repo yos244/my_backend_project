@@ -4,6 +4,7 @@ const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data");
 const db = require("../db/connection.js");
 const { response } = require("../app.js");
+const { string } = require("pg-format");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -14,21 +15,26 @@ describe("3 api/categories", () => {
       .get("/api/categories")
       .expect(200)
       .then((response) => {
-        const hasProperties = true;
-        // array length more than 0 check
-        // forEach expect match objects
-        if (response.body.length === 0) {
-          hasProperties = false;
-        }
-        response.body.forEach((element) => {
-          if (
-            element.hasOwnProperty(`slug`) === false ||
-            element.hasOwnProperty(`description`) === false
-          ) {
-            hasProperties = false
-          }
+        // (_body error)           {body: {categories}} 
+        expect(response.body).toHaveLength(4);
+        response.body.forEach((category) => {
+          expect(category).toMatchObject({
+            slug: expect.any(String),
+            description: expect.any(String),
+          });
         });
-        expect(hasProperties).toBe(true);
       });
+  });
+  
+});
+
+describe('Error handling', () => {
+  test('GET 404 not found', () => {
+    return request(app)
+    .get("/api/categ")
+    .expect(404)
+    .then((response)=>{
+      expect(response.body.msg).toBe(`Not found`)
+    })
   });
 });
