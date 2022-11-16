@@ -1,5 +1,6 @@
 const { response } = require("../app.js");
 const db = require("../db/connection.js");
+const reviews = require("../db/data/test-data/reviews.js");
 
 exports.selectCategories = () => {
   return db
@@ -27,7 +28,27 @@ exports.selectReviews = () => {
     .then((response) => {
       response.rows.forEach((review) => {
         review.comment_count = Number(review.comment_count);
+        // review.created_at = Date.parse(review.created_at);
+        // console.log(typeof (review.created_at));
       });
       return response.rows;
+    });
+};
+
+exports.selectReviewWithId = (id) => {
+  return db
+    .query(
+      `
+    SELECT * FROM reviews
+    WHERE review_id = $1
+    `,
+      [id]
+    )
+    .then((review) => {
+        if (review.rows.length === 0) {
+            return Promise.reject({status:400, msg:"Invalid id"})
+        }
+      review.rows[0].created_at = review.rows[0].created_at.toString();
+      return review.rows[0];
     });
 };

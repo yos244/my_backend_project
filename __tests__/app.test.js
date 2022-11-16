@@ -3,6 +3,7 @@ const app = require("../app.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data");
 const db = require("../db/connection.js");
+const { response } = require("../app.js");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -49,6 +50,25 @@ describe(" api/categories", () => {
         });
       });
   });
+  test("GET 200 - api/reviews/:review_id", () => {
+    return request(app)
+      .get("/api/reviews/2")
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toMatchObject({
+          review_id: 2,
+          title: `Jenga`,
+          review_body: "Fiddly fun for all the family",
+          designer: `Leslie Scott`,
+          review_img_url:
+            "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
+          votes: 5,
+          category: `dexterity`,
+          owner: `philippaclaire9`,
+          created_at: (new Date(1610964101251)).toString(),
+        });
+      });
+  });
 });
 
 describe("Error handling", () => {
@@ -59,6 +79,15 @@ describe("Error handling", () => {
       .then((response) => {
         expect(response.body.msg).toBe(`Not found`);
       });
+  });
+  test('GET: 400 - Error handling for api/reviews/:wrong_id (invalid query)', () => {
+    return request(app)
+      .get("/api/reviews/34567")
+      .expect(400)
+      .then((response)=>{
+        expect(response.body.msg).toBe("Invalid id");
+      })
+  });
+
 });
-})
 
