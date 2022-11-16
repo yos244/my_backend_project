@@ -3,7 +3,7 @@ const app = require("../app.js");
 const seed = require("../db/seeds/seed.js");
 const testData = require("../db/data/test-data");
 const db = require("../db/connection.js");
-const { response } = require("../app.js");
+const sorted = require('jest-sorted');
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -99,9 +99,18 @@ describe(" api/categories", () => {
             review_id: 3,
             created_at: new Date(1610964545410).toString(),
           },
-        ]);
+        ])
+        expect(response.body).toBeSortedBy(`created_at`,{descending: true,});
       });
   });
+
+  test("GET: 200 /api/reviews/:review_id/comments with a review that has no comments" , () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([])
+      })}) 
 });
 
 describe("Error handling", () => {
