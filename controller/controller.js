@@ -1,9 +1,11 @@
 const express = require(`express`);
+const comments = require("../db/data/test-data/comments.js");
 const reviews = require("../db/data/test-data/reviews.js");
 const {
   selectCategories,
   selectReviews,
   selectReviewWithId,
+  selectComments,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -26,4 +28,12 @@ exports.getReviewsWithId = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.getComments = (req, res, next) => {
+  selectComments(req.params.review_id).then((comments) => {
+    res.status(200).send(comments);
+  }).catch((err)=>{
+    next(err)
+  })
 };

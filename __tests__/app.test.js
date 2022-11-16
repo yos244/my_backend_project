@@ -65,8 +65,41 @@ describe(" api/categories", () => {
           votes: 5,
           category: `dexterity`,
           owner: `philippaclaire9`,
-          created_at: (new Date(1610964101251)).toString(),
+          created_at: new Date(1610964101251).toString(),
         });
+      });
+  });
+  test("GET: 200 /api/reviews/:review_id/comments", () => {
+    return request(app)
+      .get("/api/reviews/3/comments")
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([
+          {
+            comment_id: 6,
+            body: "Not sure about dogs, but my cat likes to get involved with board games, the boxes are their particular favourite",
+            votes: 10,
+            author: "philippaclaire9",
+            review_id: 3,
+            created_at: new Date(1616874588110).toString(),
+          },
+          {
+            comment_id: 3,
+            body: "I didn't know dogs could play games",
+            votes: 10,
+            author: "philippaclaire9",
+            review_id: 3,
+            created_at: new Date(1610964588110).toString(),
+          },
+          {
+            comment_id: 2,
+            body: "My dog loved this game too!",
+            votes: 13,
+            author: "mallionaire",
+            review_id: 3,
+            created_at: new Date(1610964545410).toString(),
+          },
+        ]);
       });
   });
 });
@@ -80,14 +113,36 @@ describe("Error handling", () => {
         expect(response.body.msg).toBe(`Not found`);
       });
   });
-  test('GET: 400 - Error handling for api/reviews/:wrong_id (invalid query)', () => {
+  test("GET: 400 - Error handling for api/reviews/:wrong_id (invalid query)", () => {
     return request(app)
       .get("/api/reviews/34567")
       .expect(400)
-      .then((response)=>{
+      .then((response) => {
         expect(response.body.msg).toBe("Invalid id");
-      })
+      });
   });
-
+  test("GET: 400 - Error handling for api/reviews/invalid_id (invalid query)", () => {
+    return request(app)
+      .get("/api/reviews/gnmsf")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not a valid id");
+      });
+  });
+  test("GET: 400 - Error handling for api/reviews/wrong_id/comments (invalid query)", () => {
+    return request(app)
+      .get("/api/reviews/5563/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid id");
+      });
+  });
+  test("GET: 400 - Error handling for api/not a number/comments (invalid query)", () => {
+    return request(app)
+      .get("/api/reviews/shlmnth/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not a valid id");
+      });
+  });
 });
-

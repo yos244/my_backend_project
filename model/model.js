@@ -36,6 +36,11 @@ exports.selectReviews = () => {
 };
 
 exports.selectReviewWithId = (id) => {
+  const numberedId = Number(id);
+  if (isNaN(numberedId)) {
+    return Promise.reject({ status: 400, msg: "Not a valid id" });
+  }
+
   return db
     .query(
       `
@@ -45,10 +50,35 @@ exports.selectReviewWithId = (id) => {
       [id]
     )
     .then((review) => {
-        if (review.rows.length === 0) {
-            return Promise.reject({status:400, msg:"Invalid id"})
-        }
+      if (review.rows.length === 0) {
+        return Promise.reject({ status: 400, msg: "Invalid id" });
+      }
       review.rows[0].created_at = review.rows[0].created_at.toString();
       return review.rows[0];
+    });
+};
+
+exports.selectComments = (id) => {
+  const numberedId = Number(id);
+  if (isNaN(numberedId)) {
+    return Promise.reject({ status: 400, msg: "Not a valid id" });
+  }
+  return db
+    .query(
+      `
+    SELECT * from comments
+    WHERE review_id = $1
+    ORDER BY created_at DESC;
+    `,
+      [id]
+    )
+    .then((comments) => {
+      if (comments.rows.length === 0) {
+        return Promise.reject({ status: 400, msg: "Invalid id" });
+      }
+      comments.rows.forEach((comment) => {
+        comment.created_at = comment.created_at.toString();
+      });
+      return comments.rows;
     });
 };
