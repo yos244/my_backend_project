@@ -66,19 +66,31 @@ exports.selectComments = (id) => {
   return db
     .query(
       `
+  SELECT * from reviews
+  `
+    )
+    .then((reviews) => {
+      if (id > reviews.rows.length) {
+        return Promise.reject({ status: 400, msg: "Invalid id" });
+      }
+      return db
+        .query(
+          `
     SELECT * from comments
     WHERE review_id = $1
     ORDER BY created_at DESC;
     `,
-      [id]
-    )
-    .then((comments) => {
-      if (comments.rows.length === 0) {
-        return Promise.reject({ status: 400, msg: "Invalid id" });
-      }
-      comments.rows.forEach((comment) => {
-        comment.created_at = comment.created_at.toString();
-      });
-      return comments.rows;
+          [id]
+        )
+        .then((comments) => {
+          console.log(comments.rows);
+          if (comments.rows.length === 0) {
+            return comments.rows;
+          }
+          comments.rows.forEach((comment) => {
+            comment.created_at = comment.created_at.toString();
+          });
+          return comments.rows;
+        });
     });
 };
