@@ -1,11 +1,11 @@
 const express = require(`express`);
-const comments = require("../db/data/test-data/comments.js");
-const reviews = require("../db/data/test-data/reviews.js");
+
 const {
   selectCategories,
   selectReviews,
   selectReviewWithId,
   selectComments,
+  insertComment,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -37,3 +37,11 @@ exports.getComments = (req, res, next) => {
     next(err)
   })
 };
+
+exports.postComment = (req,res,next) => {
+    insertComment(req.params.review_id,req.body).then((comment)=>{
+      res.status(201).send(comment)
+    }).catch((err)=>{
+      next(err)
+    })
+}

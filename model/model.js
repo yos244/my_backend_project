@@ -83,7 +83,6 @@ exports.selectComments = (id) => {
           [id]
         )
         .then((comments) => {
-          console.log(comments.rows);
           if (comments.rows.length === 0) {
             return comments.rows;
           }
@@ -91,6 +90,57 @@ exports.selectComments = (id) => {
             comment.created_at = comment.created_at.toString();
           });
           return comments.rows;
+        });
+    });
+};
+
+exports.insertComment = (revId, { body, username }) => {
+  return db
+    .query(
+      `
+  SELECT * FROM reviews`
+    )
+    .then((response) => {
+      console.log(body);
+      if (
+        revId > response.rows.length ||
+        isNaN(revId) ||
+        !body ||
+        body.trim().length === 0
+      ) {
+        return Promise.reject({ status: 400, msg: `Invalid id` });
+      }
+      return db
+        .query(
+          `
+      SELECT * from users
+      `
+        )
+        .then((users) => {
+          let checkUsername = false;
+          users.rows.forEach((user) => {
+            if (user.username === username) {
+              checkUsername = true;
+            }
+          });
+          if (checkUsername === true) {
+            return db
+              .query(
+                `
+INSERT INTO comments 
+(review_id, author, body) 
+VALUES 
+($1,$2,$3) 
+RETURNING *; 
+`,
+                [revId, username, body]
+              )
+              .then((response) => {
+                return response.rows[0];
+              });
+          } else {
+            return Promise.reject({ status: 400, msg: `Invalid username` });
+          }
         });
     });
 };
