@@ -5,6 +5,7 @@ const {
   getReviewsWithId,
   getComments,
   postComment,
+  patchReview,
 } = require("./controller/controller");
 
 
@@ -18,6 +19,8 @@ app.get("/api/reviews/:review_id", getReviewsWithId);
 app.get("/api/reviews/:review_id/comments", getComments)
 
 app.post("/api/reviews/:review_id/comments", postComment)
+
+app.patch("/api/reviews/:review_id", patchReview)
 
 app.use((err, req, res, next) => {
   res.status(err.status).send({ msg: err.msg });

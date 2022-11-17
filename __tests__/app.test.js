@@ -5,7 +5,9 @@ const testData = require("../db/data/test-data");
 const db = require("../db/connection.js");
 const sorted = require("jest-sorted");
 const express = require(`express`);
-
+const { string } = require("pg-format");
+const reviews = require("../db/data/test-data/reviews.js");
+const { response } = require("../app.js");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -117,33 +119,60 @@ describe(" api/categories", () => {
 });
 describe("POST api", () => {
   test("POST: 201 -  POST /api/reviews/:review_id/comments post a body that accepts username and body properties", () => {
-    const comment = {username: `bainesface`, body: `I like pizza`}
+    const comment = { username: `bainesface`, body: `I like pizza` };
     return request(app)
-    .post("/api/reviews/1/comments")
-    .send(comment)
-    .expect(201)
-    .then((response)=>{
-      expect(response.body.author).toEqual(`bainesface`)
-      expect(response.body.body).toEqual(`I like pizza`)
-      expect(response.body.review_id).toBe(1)
-    })
+      .post("/api/reviews/1/comments")
+      .send(comment)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.author).toEqual(`bainesface`);
+        expect(response.body.body).toEqual(`I like pizza`);
+        expect(response.body.review_id).toBe(1);
+      });
   });
   test("POST: 201 -  posts something with unnecesary key returns post without the key", () => {
-    const comment = {username: `bainesface`, body: `I hate pizza`, somethingElse: `nothing`}
+    const comment = {
+      username: `bainesface`,
+      body: `I hate pizza`,
+      somethingElse: `nothing`,
+    };
     return request(app)
-    .post("/api/reviews/5/comments")
-    .send(comment)
-    .expect(201)
-    .then((response)=>{
-      expect(response.body.author).toEqual(`bainesface`)
-      expect(response.body.body).toEqual(`I hate pizza`)
-      expect(response.body.review_id).toBe(5)
-      expect(response.body.hasOwnProperty(`somethingElse`)).toBe(false)
-    })
+      .post("/api/reviews/5/comments")
+      .send(comment)
+      .expect(201)
+      .then((response) => {
+        expect(response.body.author).toEqual(`bainesface`);
+        expect(response.body.body).toEqual(`I hate pizza`);
+        expect(response.body.review_id).toBe(5);
+        expect(response.body.hasOwnProperty(`somethingElse`)).toBe(false);
+      });
   });
 
+  });
 
-});
+  describe('PATCH api', () => {
+    test("PATCH: 201 - increments the current review vote by 1", () => {
+      const increment = { inc_votes: 1 };
+      return request(app)
+        .patch("/api/reviews/6")
+        .send(increment)
+        .expect(200)
+        .then((patch) => {
+          expect(patch.body).toMatchObject({
+            title: "Occaecat consequat officia in quis commodo.",
+            designer: "Ollie Tabooger",
+            owner: "mallionaire",
+            review_img_url:
+              "https://images.pexels.com/photos/278918/pexels-photo-278918.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+            review_body:
+              "Fugiat fugiat enim officia laborum quis. Aliquip laboris non nulla nostrud magna exercitation in ullamco aute laborum cillum nisi sint. Culpa excepteur aute cillum minim magna fugiat culpa adipisicing eiusmod laborum ipsum fugiat quis. Mollit consectetur amet sunt ex amet tempor magna consequat dolore cillum adipisicing. Proident est sunt amet ipsum magna proident fugiat deserunt mollit officia magna ea pariatur. Ullamco proident in nostrud pariatur. Minim consequat pariatur id pariatur adipisicing.",
+            category: "social deduction",
+            created_at: expect.any(String),
+            votes: 9,
+          });
+        });
+    });
+  });
 
 describe("Error handling", () => {
   test("GET 404 not found", () => {
@@ -186,46 +215,74 @@ describe("Error handling", () => {
         expect(response.body.msg).toBe("Not a valid id");
       });
   });
-  test('POST: 400 - Invalid ID (too big)', () => {
-    const comment = {username: `philippaclaire9`, body: `No comment`}
+  test("POST: 400 - Invalid ID (too big)", () => {
+    const comment = { username: `philippaclaire9`, body: `No comment` };
     return request(app)
-    .post ("/api/reviews/6475/comments")
-    .send(comment)
-    .expect(400)
-    .then((response)=>{
-      expect(response.body.msg).toEqual("Invalid id")
-    })
+      .post("/api/reviews/6475/comments")
+      .send(comment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Invalid id");
+      });
   });
-  test('POST: 400 ID provided is a string ', () => {
-    const comment = {username: `philippaclaire9`, body: `No comment`}
+  test("POST: 400 ID provided is a string ", () => {
+    const comment = { username: `philippaclaire9`, body: `No comment` };
     return request(app)
-    .post ("/api/reviews/boo/comments")
-    .send(comment)
-    .expect(400)
-    .then((response)=>{
-      expect(response.body.msg).toEqual("Invalid id")
-    })
+      .post("/api/reviews/boo/comments")
+      .send(comment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Invalid id");
+      });
   });
-  test('POST: 400 missing body', () => {
-    const comment = {username: `philippaclaire9`}
+  test("POST: 400 missing body", () => {
+    const comment = { username: `philippaclaire9` };
     return request(app)
-    .post ("/api/reviews/2/comments")
-    .send(comment)
-    .expect(400)
-    .then((response)=>{
-      expect(response.body.msg).toEqual("Invalid id")
-    })
+      .post("/api/reviews/2/comments")
+      .send(comment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Invalid id");
+      });
   });
-  test('POST: 400 username does not exist', () => {
-    const comment = {username: `someone`, body: `boo`}
+  test("POST: 400 username does not exist", () => {
+    const comment = { username: `someone`, body: `boo` };
     return request(app)
-    .post ("/api/reviews/5/comments")
-    .send(comment)
-    .expect(400)
-    .then((response)=>{
-      expect(response.body.msg).toEqual("Invalid username")
-    })
+      .post("/api/reviews/5/comments")
+      .send(comment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Invalid username");
+      });
   });
-
-
+  test("PATCH: 400 wrong id", () => {
+    const obj = {inc_votes:5};
+    return request(app)
+      .patch("/api/reviews/593854")
+      .send(obj)
+      .expect(400)
+      .then((response)=>{
+        expect(response.body.msg).toEqual(`Invalid id`)
+      })
+  });
+  test("PATCH: 400 wrong input type", () => {
+    const obj = {inc_votes:`string`};
+    return request(app)
+      .patch("/api/reviews/5")
+      .send(obj)
+      .expect(400)
+      .then((response)=>{
+        expect(response.body.msg).toEqual(`Invalid data type`)
+      })
+  });
+  test("PATCH: 400 empty object", () => {
+    const obj = {};
+    return request(app)
+      .patch("/api/reviews/5")
+      .send(obj)
+      .expect(400)
+      .then((response)=>{
+        expect(response.body.msg).toEqual(`Invalid data type`)
+      })
+  });
 });

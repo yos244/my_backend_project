@@ -1,4 +1,4 @@
-const { response } = require("../app.js");
+const { response, all } = require("../app.js");
 const db = require("../db/connection.js");
 const reviews = require("../db/data/test-data/reviews.js");
 
@@ -101,7 +101,6 @@ exports.insertComment = (revId, { body, username }) => {
   SELECT * FROM reviews`
     )
     .then((response) => {
-      console.log(body);
       if (
         revId > response.rows.length ||
         isNaN(revId) ||
@@ -141,6 +140,39 @@ RETURNING *;
           } else {
             return Promise.reject({ status: 400, msg: `Invalid username` });
           }
+        });
+    });
+};
+
+exports.editVotes = ({ review_id }, voteInc) => {
+  if (isNaN(voteInc)) {
+    return Promise.reject({ status: 400, msg: `Invalid data type` });
+  }
+  return db
+    .query(
+      `
+  SELECT * FROM reviews
+  `
+    )
+    .then((allReviews) => {
+      if (review_id > allReviews.rows.length) {
+        return Promise.reject({ status: 400, msg: `Invalid id` });
+      }
+
+      return db
+        .query(
+          `
+  UPDATE reviews
+  SET votes = votes + $2
+  WHERE review_id = $1
+  RETURNING *
+  
+  ;
+  `,
+          [review_id, voteInc]
+        )
+        .then((updatedReview) => {
+          return updatedReview.rows[0];
         });
     });
 };
