@@ -1,4 +1,5 @@
 const express = require(`express`);
+const users = require("../db/data/test-data/users.js");
 
 const {
   selectCategories,
@@ -7,6 +8,7 @@ const {
   selectComments,
   insertComment,
   editVotes,
+  selectUsers,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -52,9 +54,17 @@ exports.postComment = (req, res, next) => {
 };
 
 exports.patchReview = (req, res, next) => {
-  editVotes(req.params, req.body.inc_votes).then((review) => {
-    res.status(200).send(review);
-  }).catch((err)=>{
-    next(err)
+  editVotes(req.params, req.body.inc_votes)
+    .then((review) => {
+      res.status(200).send(review);
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsers = (req, res, next) => {
+  selectUsers(req).then((users) => {
+    res.status(200).send(users);
   });
 };

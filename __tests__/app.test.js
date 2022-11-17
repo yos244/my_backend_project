@@ -147,32 +147,49 @@ describe("POST api", () => {
         expect(response.body.hasOwnProperty(`somethingElse`)).toBe(false);
       });
   });
+});
 
+describe("PATCH api", () => {
+  test("PATCH: 201 - increments the current review vote by 1", () => {
+    const increment = { inc_votes: 1 };
+    return request(app)
+      .patch("/api/reviews/6")
+      .send(increment)
+      .expect(200)
+      .then((patch) => {
+        expect(patch.body).toMatchObject({
+          title: "Occaecat consequat officia in quis commodo.",
+          designer: "Ollie Tabooger",
+          owner: "mallionaire",
+          review_img_url:
+            "https://images.pexels.com/photos/278918/pexels-photo-278918.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+          review_body:
+            "Fugiat fugiat enim officia laborum quis. Aliquip laboris non nulla nostrud magna exercitation in ullamco aute laborum cillum nisi sint. Culpa excepteur aute cillum minim magna fugiat culpa adipisicing eiusmod laborum ipsum fugiat quis. Mollit consectetur amet sunt ex amet tempor magna consequat dolore cillum adipisicing. Proident est sunt amet ipsum magna proident fugiat deserunt mollit officia magna ea pariatur. Ullamco proident in nostrud pariatur. Minim consequat pariatur id pariatur adipisicing.",
+          category: "social deduction",
+          created_at: expect.any(String),
+          votes: 9,
+        });
+      });
   });
+});
 
-  describe('PATCH api', () => {
-    test("PATCH: 201 - increments the current review vote by 1", () => {
-      const increment = { inc_votes: 1 };
-      return request(app)
-        .patch("/api/reviews/6")
-        .send(increment)
-        .expect(200)
-        .then((patch) => {
-          expect(patch.body).toMatchObject({
-            title: "Occaecat consequat officia in quis commodo.",
-            designer: "Ollie Tabooger",
-            owner: "mallionaire",
-            review_img_url:
-              "https://images.pexels.com/photos/278918/pexels-photo-278918.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-            review_body:
-              "Fugiat fugiat enim officia laborum quis. Aliquip laboris non nulla nostrud magna exercitation in ullamco aute laborum cillum nisi sint. Culpa excepteur aute cillum minim magna fugiat culpa adipisicing eiusmod laborum ipsum fugiat quis. Mollit consectetur amet sunt ex amet tempor magna consequat dolore cillum adipisicing. Proident est sunt amet ipsum magna proident fugiat deserunt mollit officia magna ea pariatur. Ullamco proident in nostrud pariatur. Minim consequat pariatur id pariatur adipisicing.",
-            category: "social deduction",
-            created_at: expect.any(String),
-            votes: 9,
+describe("GET USERS", () => {
+  test("/api/users", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then((users) => {
+        expect(users.body).toHaveLength(4);
+        users.body.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
           });
         });
-    });
+      });
   });
+});
 
 describe("Error handling", () => {
   test("GET 404 not found", () => {
@@ -256,24 +273,24 @@ describe("Error handling", () => {
       });
   });
   test("PATCH: 400 wrong id", () => {
-    const obj = {inc_votes:5};
+    const obj = { inc_votes: 5 };
     return request(app)
       .patch("/api/reviews/593854")
       .send(obj)
       .expect(400)
-      .then((response)=>{
-        expect(response.body.msg).toEqual(`Invalid id`)
-      })
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Id does not exist`);
+      });
   });
   test("PATCH: 400 wrong input type", () => {
-    const obj = {inc_votes:`string`};
+    const obj = { inc_votes: `string` };
     return request(app)
       .patch("/api/reviews/5")
       .send(obj)
       .expect(400)
-      .then((response)=>{
-        expect(response.body.msg).toEqual(`Invalid data type`)
-      })
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid data type`);
+      });
   });
   test("PATCH: 400 empty object", () => {
     const obj = {};
@@ -281,8 +298,18 @@ describe("Error handling", () => {
       .patch("/api/reviews/5")
       .send(obj)
       .expect(400)
-      .then((response)=>{
-        expect(response.body.msg).toEqual(`Invalid data type`)
-      })
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid data type`);
+      });
+  });
+  test("PATCH: 400 object with wrong property", () => {
+    const obj = { something: `nothing` };
+    return request(app)
+      .patch("/api/reviews/5")
+      .send(obj)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid data type`);
+      });
   });
 });
