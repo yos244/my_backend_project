@@ -5,7 +5,6 @@ const testData = require("../db/data/test-data");
 const db = require("../db/connection.js");
 const sorted = require("jest-sorted");
 const express = require(`express`);
-const { response } = require("../app.js");
 
 
 beforeEach(() => seed(testData));
@@ -208,7 +207,7 @@ describe("Error handling", () => {
     })
   });
   test('POST: 400 missing body', () => {
-    const comment = {username: `philippaclaire9`, body: `   `}
+    const comment = {username: `philippaclaire9`}
     return request(app)
     .post ("/api/reviews/2/comments")
     .send(comment)

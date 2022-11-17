@@ -101,9 +101,11 @@ exports.insertComment = (revId, { body, username }) => {
   SELECT * FROM reviews`
     )
     .then((response) => {
+      console.log(body);
       if (
         revId > response.rows.length ||
         isNaN(revId) ||
+        !body ||
         body.trim().length === 0
       ) {
         return Promise.reject({ status: 400, msg: `Invalid id` });
