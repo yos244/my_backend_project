@@ -1,5 +1,6 @@
 const { response, all } = require("../app.js");
 const db = require("../db/connection.js");
+const { sort } = require("../db/data/test-data/categories.js");
 
 exports.selectCategories = () => {
   return db
@@ -13,16 +14,37 @@ exports.selectCategories = () => {
     });
 };
 
-exports.selectReviews = () => {
-  return db
+exports.selectReviews = (query) => {
+  let sort_by = `created_at`
+  if(query.sort_by) {
+    sort_by = query.sort_by
+  }
+  if (query.hasOwnProperty(`category`)) {
+    return db
+      .query(
+        `
+      SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer,  COUNT(comment_id) AS comment_count
+      FROM reviews
+      LEFT JOIN comments ON comments.review_id = reviews.review_id
+      WHERE category = $1
+      GROUP BY reviews.review_id
+      ORDER BY reviews.${sort_by} DESC;
+      `,
+        [query.category]
+      )
+      .then((revCat) => {
+        return revCat.rows;
+      });
+    }
+    return db
     .query(
       `
       SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer,  COUNT(comment_id) AS comment_count
       FROM reviews
       LEFT JOIN comments ON comments.review_id = reviews.review_id
       GROUP BY reviews.review_id
-      ORDER BY reviews.created_at DESC;
-      `
+      ORDER BY reviews.${sort_by} DESC;
+      ` 
     )
     .then((response) => {
       response.rows.forEach((review) => {
@@ -48,10 +70,10 @@ exports.selectReviewWithId = (id) => {
       LEFT JOIN comments ON comments.review_id = reviews.review_id
       WHERE reviews.review_id = $1
       GROUP BY reviews.review_id;
-    `, [id]
+    `,
+      [id]
     )
     .then((review) => {
-     
       if (review.rows.length === 0) {
         return Promise.reject({ status: 400, msg: "Invalid id" });
       }

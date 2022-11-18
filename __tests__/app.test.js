@@ -187,17 +187,34 @@ describe("GET USERS", () => {
         });
       });
   });
-  test('GET:200 - comment count', () => {
+  test("GET:200 - comment count", () => {
     return request(app)
-    .get(`/api/reviews/3`)
-    .expect(200)
-    .then((commentObj)=>{
-      expect(commentObj.body.comment_count).toBe(`3`)
-    })
+      .get(`/api/reviews/3`)
+      .expect(200)
+      .then((commentObj) => {
+        expect(commentObj.body.comment_count).toBe(`3`);
+      });
   });
 });
 
-
+describe("GET Query", () => {
+  test("GET: 200 Query with category", () => {
+    return request(app)
+      .get(`/api/reviews?category=social+deduction`)
+      .expect(200)
+      .then((revCat) => {
+        expect(revCat.body.length).toBe(11);
+      });
+  });
+  test("GET: 200 sort_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes`)
+      .expect(200)
+      .then((sortedRev) => {
+        expect(sortedRev.body).toBeSortedBy(`votes`, {descending:true});
+      });
+  });
+});
 
 describe("Error handling", () => {
   test("GET 404 not found", () => {
@@ -318,6 +335,14 @@ describe("Error handling", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toEqual(`Invalid data type`);
+      });
+  });
+  test("GET: 400 - sort_by column does not exist", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes342`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid query`);
       });
   });
 });

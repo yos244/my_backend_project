@@ -18,8 +18,10 @@ exports.getCategories = (req, res, next) => {
 };
 
 exports.getReviews = (req, res, next) => {
-  selectReviews().then((reviews) => {
+  selectReviews(req.query).then((reviews) => {
     res.status(200).send(reviews);
+  }).catch((err)=>{
+    next (err)
   });
 };
 

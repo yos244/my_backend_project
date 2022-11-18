@@ -14,7 +14,9 @@ const app = express();
 app.use(express.json());
 
 app.get(`/api/categories`, getCategories);
-app.get("/api/reviews", getReviews);
+
+app.get("/api/reviews?", getReviews);
+
 app.get("/api/reviews/:review_id", getReviewsWithId);
 
 app.get("/api/reviews/:review_id/comments", getComments);
@@ -34,6 +36,9 @@ app.use((err, req, res, next) => {
   }
   if (err.code === `23502`) {
     res.status(400).send({ msg: `Invalid data type` });
+  }
+  if (err.code === `42703`) {
+    res.status(400).send({ msg: `Invalid query` });
   }
   next(err);
 });
