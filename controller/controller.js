@@ -8,7 +8,7 @@ const {
   insertComment,
   editVotes,
   selectUsers,
-  selectCommCount,
+  removeComment,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -72,3 +72,10 @@ exports.getUsers = (req, res, next) => {
 };
 
 
+exports.deleteComment = (req,res,next) => {
+  removeComment(req.params.comment_id).then((deletedComment)=> {
+    res.status(204).send(deletedComment)
+  }).catch((err)=>{
+    next(err)
+  })
+}

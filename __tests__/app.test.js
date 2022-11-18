@@ -211,7 +211,7 @@ describe("GET Query", () => {
       .get(`/api/reviews?sort_by=votes`)
       .expect(200)
       .then((sortedRev) => {
-        expect(sortedRev.body).toBeSortedBy(`votes`, {descending:true});
+        expect(sortedRev.body).toBeSortedBy(`votes`, { descending: true });
       });
   });
   test("GET: 200 order_by and sort_by", () => {
@@ -220,6 +220,17 @@ describe("GET Query", () => {
       .expect(200)
       .then((sortedRev) => {
         expect(sortedRev.body).toBeSortedBy(`votes`);
+      });
+  });
+});
+
+describe("DELETE api", () => {
+  test("DELETE 204 - Delete comment given comment ID", () => {
+    return request(app)
+      .delete(`/api/comments/4`)
+      .expect(204)
+      .then((deletedComment) => {
+        expect(deletedComment.body).toEqual({});
       });
   });
 });
@@ -358,6 +369,33 @@ describe("Error handling", () => {
       .get(`/api/reviews?sort_by=votes&order_by=asc354t`)
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toEqual(`Invalid order by query`);      });
+        expect(response.body.msg).toEqual(`Invalid order by query`);
+      });
+  });
+  test("GET: 400 wrong category title", () => {
+    return request(app)
+      .get(`/api/reviews?category=boo`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid category`);
+      });
+  });
+
+  test("DELETE: 400 - Error handling for api/comments/:wrong_id (id does not exist)", () => {
+    return request(app)
+      .delete("/api/comments/342567")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Id does not exist");
+      });
+  });
+
+  test("DELETE: 400 - Error handling for api/comments/string_id (invalid id type)", () => {
+    return request(app)
+      .delete("/api/comments/gnmsf")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid data type");
+      });
   });
 });
