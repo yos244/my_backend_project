@@ -145,9 +145,7 @@ RETURNING *;
 };
 
 exports.editVotes = ({ review_id }, voteInc) => {
-  if (isNaN(voteInc)) {
-    return Promise.reject({ status: 400, msg: `Invalid data type` });
-  }
+
   return db
     .query(
       `
@@ -156,7 +154,7 @@ exports.editVotes = ({ review_id }, voteInc) => {
     )
     .then((allReviews) => {
       if (review_id > allReviews.rows.length) {
-        return Promise.reject({ status: 400, msg: `Invalid id` });
+        return Promise.reject({ status: 400, msg: `Id does not exist` });
       }
 
       return db
@@ -176,3 +174,11 @@ exports.editVotes = ({ review_id }, voteInc) => {
         });
     });
 };
+
+exports.selectUsers = () =>{
+  return db.query(`
+  SELECT * FROM users
+  `).then((users)=>{
+     return(users.rows)
+  })
+}
