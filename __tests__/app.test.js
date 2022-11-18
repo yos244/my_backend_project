@@ -6,8 +6,6 @@ const db = require("../db/connection.js");
 const sorted = require("jest-sorted");
 const express = require(`express`);
 const { string } = require("pg-format");
-const reviews = require("../db/data/test-data/reviews.js");
-const { response } = require("../app.js");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -189,7 +187,17 @@ describe("GET USERS", () => {
         });
       });
   });
+  test('GET:200 - comment count', () => {
+    return request(app)
+    .get(`/api/reviews/3`)
+    .expect(200)
+    .then((commentObj)=>{
+      expect(commentObj.body.comment_count).toBe(`3`)
+    })
+  });
 });
+
+
 
 describe("Error handling", () => {
   test("GET 404 not found", () => {

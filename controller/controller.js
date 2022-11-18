@@ -1,5 +1,4 @@
 const express = require(`express`);
-const users = require("../db/data/test-data/users.js");
 
 const {
   selectCategories,
@@ -9,6 +8,7 @@ const {
   insertComment,
   editVotes,
   selectUsers,
+  selectCommCount,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -68,3 +68,5 @@ exports.getUsers = (req, res, next) => {
     res.status(200).send(users);
   });
 };
+
+

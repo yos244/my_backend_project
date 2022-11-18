@@ -1,6 +1,5 @@
 const { response, all } = require("../app.js");
 const db = require("../db/connection.js");
-const reviews = require("../db/data/test-data/reviews.js");
 
 exports.selectCategories = () => {
   return db
@@ -43,13 +42,16 @@ exports.selectReviewWithId = (id) => {
 
   return db
     .query(
-      `
-    SELECT * FROM reviews
-    WHERE review_id = $1
-    `,
-      [id]
+      `   
+      SELECT reviews.*,COUNT(comment_id) AS comment_count
+      FROM reviews
+      LEFT JOIN comments ON comments.review_id = reviews.review_id
+      WHERE reviews.review_id = $1
+      GROUP BY reviews.review_id;
+    `, [id]
     )
     .then((review) => {
+     
       if (review.rows.length === 0) {
         return Promise.reject({ status: 400, msg: "Invalid id" });
       }
@@ -145,7 +147,6 @@ RETURNING *;
 };
 
 exports.editVotes = ({ review_id }, voteInc) => {
-
   return db
     .query(
       `
@@ -175,10 +176,29 @@ exports.editVotes = ({ review_id }, voteInc) => {
     });
 };
 
-exports.selectUsers = () =>{
-  return db.query(`
+exports.selectUsers = () => {
+  return db
+    .query(
+      `
   SELECT * FROM users
-  `).then((users)=>{
-     return(users.rows)
-  })
-}
+  `
+    )
+    .then((users) => {
+      return users.rows;
+    });
+};
+
+exports.selectCommCount = (id) => {
+  // return db
+  //   .query(
+  //     `
+  //     SELECT COUNT(comment_id) AS comment_count
+  //     FROM reviews
+  //     LEFT JOIN comments ON comments.review_id = reviews.review_id
+  //     WHERE reviews.review_id = 3;
+  // `[id]
+  //   )
+  //   .then((obj) => {
+  //     console.log(obj.rows);
+  //   });
+};
