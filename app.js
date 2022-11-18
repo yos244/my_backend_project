@@ -7,6 +7,7 @@ const {
   postComment,
   patchReview,
   getUsers,
+  getCommCount,
 } = require("./controller/controller");
 
 const app = express();
@@ -24,8 +25,10 @@ app.patch("/api/reviews/:review_id", patchReview);
 
 app.get("/api/users", getUsers);
 
+
+
+
 app.use((err, req, res, next) => {
-  console.log(err.code);
   if (err.code === `22P02`) {
     res.status(400).send({ msg: `Invalid data type` });
   }
