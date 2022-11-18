@@ -214,6 +214,14 @@ describe("GET Query", () => {
         expect(sortedRev.body).toBeSortedBy(`votes`, {descending:true});
       });
   });
+  test("GET: 200 order_by and sort_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes&order_by=asc`)
+      .expect(200)
+      .then((sortedRev) => {
+        expect(sortedRev.body).toBeSortedBy(`votes`);
+      });
+  });
 });
 
 describe("Error handling", () => {
@@ -342,7 +350,14 @@ describe("Error handling", () => {
       .get(`/api/reviews?sort_by=votes342`)
       .expect(400)
       .then((response) => {
-        expect(response.body.msg).toEqual(`Invalid query`);
+        expect(response.body.msg).toEqual(`Invalid sort query`);
       });
+  });
+  test("GET: 400 sort_by and wrong order_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes&order_by=asc354t`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid order by query`);      });
   });
 });

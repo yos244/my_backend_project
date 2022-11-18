@@ -15,9 +15,28 @@ exports.selectCategories = () => {
 };
 
 exports.selectReviews = (query) => {
-  let sort_by = `created_at`
-  if(query.sort_by) {
-    sort_by = query.sort_by
+  let order_by = `desc`
+  let sort_by = `created_at`;
+  if (query.sort_by) {
+    if (
+      query.sort_by !== `title` &&
+      query.sort_by !== `designer` && 
+      query.sort_by !== `owner` &&
+      query.sort_by !== `review_img_url` &&
+      query.sort_by !== `review_body` &&
+      query.sort_by !== `category` &&
+      query.sort_by !== `created_at` &&
+      query.sort_by !== `votes`
+    ) {
+      return Promise.reject ({status:400, msg:`Invalid sort query`})
+    }
+      sort_by = query.sort_by;
+  }
+  if (query.order_by) {
+    if (query.order_by !== `asc` && query.order_by !== `desc`) {
+      return Promise.reject ({status:400, msg:`Invalid order by query`})
+    }
+  order_by = query.order_by
   }
   if (query.hasOwnProperty(`category`)) {
     return db
@@ -28,22 +47,22 @@ exports.selectReviews = (query) => {
       LEFT JOIN comments ON comments.review_id = reviews.review_id
       WHERE category = $1
       GROUP BY reviews.review_id
-      ORDER BY reviews.${sort_by} DESC;
+      ORDER BY reviews.${sort_by} ${order_by};
       `,
         [query.category]
       )
       .then((revCat) => {
         return revCat.rows;
       });
-    }
-    return db
+  }
+  return db
     .query(
       `
       SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer,  COUNT(comment_id) AS comment_count
       FROM reviews
       LEFT JOIN comments ON comments.review_id = reviews.review_id
       GROUP BY reviews.review_id
-      ORDER BY reviews.${sort_by} DESC;
+      ORDER BY reviews.${sort_by} ${order_by};
       ` 
     )
     .then((response) => {
