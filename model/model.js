@@ -19,14 +19,16 @@ exports.selectReviews = (query) => {
   let sort_by = `created_at`;
   if (query.sort_by) {
     if (
-      query.sort_by !== `title` &&
-      query.sort_by !== `designer` &&
-      query.sort_by !== `owner` &&
-      query.sort_by !== `review_img_url` &&
-      query.sort_by !== `review_body` &&
-      query.sort_by !== `category` &&
-      query.sort_by !== `created_at` &&
-      query.sort_by !== `votes`
+      ![
+        `title`,
+        `designer`,
+        `owner`,
+        `review_img_url`,
+        `review_body`,
+        `category`,
+        `created_at`,
+        `votes`,
+      ].includes(query.sort_by)
     ) {
       return Promise.reject({ status: 400, msg: `Invalid sort query` });
     }
@@ -46,9 +48,7 @@ exports.selectReviews = (query) => {
   ORDER BY reviews.${sort_by} ${order_by};`;
   if (query.hasOwnProperty(`category`)) {
     if (
-      query.category !== `euro game` &&
-      query.category !== `dexterity` &&
-      query.category !== `social deduction`
+      ![`euro game`, `dexterity`, `social deduction`].includes(query.category)
     ) {
       return Promise.reject({ status: 400, msg: `Invalid category` });
     }
