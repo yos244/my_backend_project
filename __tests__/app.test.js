@@ -6,7 +6,6 @@ const db = require("../db/connection.js");
 const sorted = require("jest-sorted");
 const express = require(`express`);
 const { string } = require("pg-format");
-const reviews = require("../db/data/test-data/reviews.js");
 const { response } = require("../app.js");
 
 beforeEach(() => seed(testData));
@@ -189,6 +188,58 @@ describe("GET USERS", () => {
         });
       });
   });
+  test("GET:200 - comment count", () => {
+    return request(app)
+      .get(`/api/reviews/3`)
+      .expect(200)
+      .then((commentObj) => {
+        expect(commentObj.body.comment_count).toBe(`3`);
+      });
+  });
+});
+
+describe("GET Query", () => {
+  test("GET: 200 Query with category", () => {
+    return request(app)
+      .get(`/api/reviews?category=social%20deduction`)
+      .expect(200)
+      .then((revCat) => {
+        expect(revCat.body.length).toBe(11);
+        revCat.body.forEach((review) => {
+          expect(review.category).toEqual("social deduction");
+        });
+      });
+  });
+  test("GET: 200 sort_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes`)
+      .expect(200)
+      .then((sortedRev) => {
+        expect(sortedRev.body).toBeSortedBy(`votes`, { descending: true });
+      });
+  });
+  test("GET: 200 order_by and sort_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes&order_by=asc`)
+      .expect(200)
+      .then((sortedRev) => {
+        expect(sortedRev.body).toBeSortedBy(`votes`);
+      });
+  });
+  test("GET: 200 get an empty array when sending an category that has no review", () => {
+    return request(app)
+      .get(`/api/reviews?category=children's%20games`)
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([]);
+      });
+  });
+});
+
+describe("DELETE api", () => {
+  test("DELETE 204 - Delete comment given comment ID", () => {
+    return request(app).delete(`/api/comments/4`).expect(204);
+  });
 });
 
 describe("Error handling", () => {
@@ -310,6 +361,48 @@ describe("Error handling", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toEqual(`Invalid data type`);
+      });
+  });
+  test("GET: 400 - sort_by column does not exist", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes342`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid sort query`);
+      });
+  });
+  test("GET: 400 sort_by and wrong order_by", () => {
+    return request(app)
+      .get(`/api/reviews?sort_by=votes&order_by=asc354t`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid order by query`);
+      });
+  });
+  test("GET: 400 wrong category title", () => {
+    return request(app)
+      .get(`/api/reviews?category=boo`)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual(`Invalid category`);
+      });
+  });
+
+  test("DELETE: 400 - Error handling for api/comments/:wrong_id (id does not exist)", () => {
+    return request(app)
+      .delete("/api/comments/342567")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Id does not exist");
+      });
+  });
+
+  test("DELETE: 400 - Error handling for api/comments/string_id (invalid id type)", () => {
+    return request(app)
+      .delete("/api/comments/gnmsf")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid data type");
       });
   });
 });

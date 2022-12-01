@@ -1,5 +1,4 @@
 const express = require(`express`);
-const users = require("../db/data/test-data/users.js");
 
 const {
   selectCategories,
@@ -9,6 +8,7 @@ const {
   insertComment,
   editVotes,
   selectUsers,
+  removeComment,
 } = require("../model/model.js");
 
 exports.getCategories = (req, res, next) => {
@@ -18,8 +18,10 @@ exports.getCategories = (req, res, next) => {
 };
 
 exports.getReviews = (req, res, next) => {
-  selectReviews().then((reviews) => {
+  selectReviews(req.query).then((reviews) => {
     res.status(200).send(reviews);
+  }).catch((err)=>{
+    next (err)
   });
 };
 
@@ -68,3 +70,12 @@ exports.getUsers = (req, res, next) => {
     res.status(200).send(users);
   });
 };
+
+
+exports.deleteComment = (req,res,next) => {
+  removeComment(req.params.comment_id).then((deletedComment)=> {
+    res.status(204).send()
+  }).catch((err)=>{
+    next(err)
+  })
+}
