@@ -74,7 +74,7 @@ exports.getUsers = (req, res, next) => {
 
 exports.deleteComment = (req,res,next) => {
   removeComment(req.params.comment_id).then((deletedComment)=> {
-    res.status(204).send(deletedComment)
+    res.status(204).send()
   }).catch((err)=>{
     next(err)
   })

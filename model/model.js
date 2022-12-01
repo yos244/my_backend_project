@@ -40,6 +40,7 @@ exports.selectReviews = (query) => {
     }
     order_by = query.order_by;
   }
+
   const queryStr1 = `SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, 
   reviews.designer, COUNT(comment_id) AS comment_count FROM reviews 
   LEFT JOIN comments ON comments.review_id = reviews.review_id`;
@@ -48,25 +49,46 @@ exports.selectReviews = (query) => {
   ORDER BY reviews.${sort_by} ${order_by};`;
   if (query.hasOwnProperty(`category`)) {
     if (
-      ![`euro game`, `dexterity`, `social deduction`].includes(query.category)
+      ![
+        `euro game`,
+        `dexterity`,
+        `social deduction`,
+        `children's games`,
+      ].includes(query.category)
     ) {
       return Promise.reject({ status: 400, msg: `Invalid category` });
     }
-    return db.query(`${queryStr1} ${querCat} ${queryStr2}`).then((revCat) => {
-      return revCat.rows;
-    });
+    if (query.category.includes("'")) {
+      query.category = query.category.replace("'", "''");
+    }
+    return db
+      .query(
+        `
+    SELECT * FROM reviews
+    WHERE category = '${query.category}'
+    `
+      )
+      .then((results) => {
+        if (!results.rows[0]) {
+          console.log(results.rows);
+          return results.rows;
+        }
+        return db
+          .query(`${queryStr1} ${querCat} ${queryStr2}`)
+          .then((revCat) => {
+            return revCat.rows;
+          });
+      });
   }
   return db
     .query(
       `
-      ${queryStr1} ${queryStr2}
-      `
+        ${queryStr1} ${queryStr2}
+        `
     )
     .then((response) => {
       response.rows.forEach((review) => {
         review.comment_count = Number(review.comment_count);
-        // review.created_at = Date.parse(review.created_at);
-        // console.log(typeof (review.created_at));
       });
       return response.rows;
     });
@@ -239,34 +261,12 @@ exports.removeComment = (id) => {
       if (comments.rows.length === 0) {
         return Promise.reject({ status: 400, msg: `Id does not exist` });
       }
-      return db
-        .query(
-          `
+      return db.query(
+        `
     DELETE FROM comments
     WHERE comment_id = $1;
     `,
-          [id]
-        )
-        .then((deletedComm) => {
-          return deletedComm.rows;
-        });
+        [id]
+      );
     });
 };
-
-// `
-// SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer,  COUNT(comment_id) AS comment_count
-// FROM reviews
-// LEFT JOIN comments ON comments.review_id = reviews.review_id
-// WHERE category =
-// GROUP BY reviews.review_id
-// ORDER BY reviews.${sort_by} ${order_by};
-// `,
-//   [query.category]
-
-// q2
-
-// SELECT reviews.owner, reviews.title, reviews.review_id, reviews.category, reviews.review_img_url, reviews.created_at, reviews.votes, reviews.designer,  COUNT(comment_id) AS comment_count
-// FROM reviews
-// LEFT JOIN comments ON comments.review_id = reviews.review_id
-// GROUP BY reviews.review_id
-// ORDER BY reviews.${sort_by} ${order_by};

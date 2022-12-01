@@ -6,6 +6,7 @@ const db = require("../db/connection.js");
 const sorted = require("jest-sorted");
 const express = require(`express`);
 const { string } = require("pg-format");
+const { response } = require("../app.js");
 
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
@@ -200,10 +201,13 @@ describe("GET USERS", () => {
 describe("GET Query", () => {
   test("GET: 200 Query with category", () => {
     return request(app)
-      .get(`/api/reviews?category=social+deduction`)
+      .get(`/api/reviews?category=social%20deduction`)
       .expect(200)
       .then((revCat) => {
         expect(revCat.body.length).toBe(11);
+        revCat.body.forEach((review) => {
+          expect(review.category).toEqual("social deduction");
+        });
       });
   });
   test("GET: 200 sort_by", () => {
@@ -222,16 +226,19 @@ describe("GET Query", () => {
         expect(sortedRev.body).toBeSortedBy(`votes`);
       });
   });
+  test("GET: 200 get an empty array when sending an category that has no review", () => {
+    return request(app)
+      .get(`/api/reviews?category=children's%20games`)
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([]);
+      });
+  });
 });
 
 describe("DELETE api", () => {
   test("DELETE 204 - Delete comment given comment ID", () => {
-    return request(app)
-      .delete(`/api/comments/4`)
-      .expect(204)
-      .then((deletedComment) => {
-        expect(deletedComment.body).toEqual({});
-      });
+    return request(app).delete(`/api/comments/4`).expect(204);
   });
 });
 
