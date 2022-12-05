@@ -9,8 +9,8 @@ const { string } = require("pg-format");
 const reviews = require("../db/data/test-data/reviews.js");
 const { response } = require("../app.js");
 
-beforeEach(() => seed(testData));
-afterAll(() => db.end());
+beforeEach(() => seed(testData)); 
+afterAll(() => db.end()); 
 
 describe(" api/categories", () => {
   test("GET:200 recieves an array with api/categories", () => {
