@@ -191,6 +191,13 @@ describe("GET USERS", () => {
   });
 });
 
+
+describe("DELETE api", () => {
+  test("DELETE 204 - Delete comment given comment ID", () => {
+    return request(app).delete(`/api/comments/4`).expect(204);
+  });
+});
+
 describe("Error handling", () => {
   test("GET 404 not found", () => {
     return request(app)

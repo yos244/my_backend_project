@@ -1,4 +1,3 @@
-const { response, all } = require("../app.js");
 const db = require("../db/connection.js");
 const reviews = require("../db/data/test-data/reviews.js");
 
@@ -182,3 +181,27 @@ exports.selectUsers = () =>{
      return(users.rows)
   })
 }
+
+
+exports.removeComment = (id) => {
+  return db
+    .query(
+      `
+  SELECT * FROM comments
+  WHERE comment_id = $1;
+  `,
+      [id]
+    )
+    .then((comments) => {
+      if (comments.rows.length === 0) {
+        return Promise.reject({ status: 400, msg: `Id does not exist` });
+      }
+      return db.query(
+        `
+    DELETE FROM comments
+    WHERE comment_id = $1;
+    `,
+        [id]
+      );
+    });
+};
