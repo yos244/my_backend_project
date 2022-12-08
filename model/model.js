@@ -49,10 +49,13 @@ exports.selectReviews = (query) => {
   if (query.hasOwnProperty(`category`)) {
     if (
       ![
-        `euro game`,
+        `strategy`,
         `dexterity`,
-        `social deduction`,
-        `children's games`,
+        `hidden-roles`,
+        `push-your-luck`,
+        `roll-and-write`,
+        `deck-building`,
+        `engine-building`,
       ].includes(query.category)
     ) {
       return Promise.reject({ status: 400, msg: `Invalid category` });
