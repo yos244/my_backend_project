@@ -198,6 +198,34 @@ describe("DELETE api", () => {
   });
 });
 
+
+test("GET: 200 sort_by", () => {
+  return request(app)
+    .get(`/api/reviews?sort_by=votes`)
+    .expect(200)
+    .then((sortedRev) => {
+      expect(sortedRev.body).toBeSortedBy(`votes`, { descending: true });
+    });
+});
+test("GET: 200 order_by and sort_by", () => {
+  return request(app)
+    .get(`/api/reviews?sort_by=votes&order_by=asc`)
+    .expect(200)
+    .then((sortedRev) => {
+      expect(sortedRev.body).toBeSortedBy(`votes`);
+    });
+});
+test("GET: 200 get an empty array when sending an category that has no review", () => {
+  return request(app)
+    .get(`/api/reviews?category=children's%20games`)
+    .expect(200)
+    .then((response) => {
+      expect(response.body).toEqual([]);
+    });
+});
+
+
+
 describe("Error handling", () => {
   test("GET 404 not found", () => {
     return request(app)
